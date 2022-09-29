@@ -88,16 +88,12 @@ contract lending is ERC721URIStorage, Ownable {
     }
 
 
-
-
-
-
     struct Loan {
         uint256 withdrawnAmount;
         uint256 withdrawnTimestamp;
         uint32 repaidLoansAmount;
-        
     }
+
 
     //id to loan
     mapping(uint256 => Loan) public Loans;
@@ -149,9 +145,37 @@ contract lending is ERC721URIStorage, Ownable {
 
         }
 
-    //function for private investors/backers being able to invest through the juniot tranche:
-    function lendToBorrowerPool(uint256 USDCAmount) public onlyPoolEnabled() onlyContractEnabled() {
-        require(poolAmount + USDCAmount <= poolLimit)
+
+
+    struct Lending {
+        uint256 lendingTimeStamp;
+        uint256 USDCAmount;
+        //mapping -> passa o id da loan e recebe quantos payments ele já recebeu da loan:
+        mapping(uint256 => uint256) paymentsReceveid;
+    }
+
+    mapping(uint256 => Lending) public Lendings;
+    event lendingMinted(uint256 id,  uint256 lendingTimeStamp, uint256 USDCAmount, address lender);
+
+    Counters.Counter public _lendingsIds;
+
+    //function for private investors/backers being able to invest through the junior tranche:
+    function lendToBorrowerPool(uint256 _USDCAmount) public onlyPoolEnabled() onlyContractEnabled() {
+        require(poolAmount + _USDCAmount <= poolLimit);
+
+        bool sent = USDCAddress.transferFrom(msg.sender, address(this), _USDCAmount);
+        require(sent, "Failed to lend to borrower pool");
+
+        _lendingsIds.increment();
+
+        uint256 lIds = _lendingsIds.current();
+
+        Lending storage l = Lendings[lIds];
+        l.lendingTimeStamp = block.timestamp;
+        l.USDCAmount = _USDCAmount;
+        poolAmount += _USDCAmount;
+
+
     }
     
     
