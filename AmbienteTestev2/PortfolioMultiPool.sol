@@ -7,9 +7,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 
-
-    //DÚVIDA: Essa pool emprestou dia 11/08 uma quantidade de dinheiro para um borrower, dia 12/08 uma pessoa X investe nessa pool. Quando a pool recebor o pagamento do borrower, elas distribuirá também
-    //para a pessoa X? mesmo se o empréstimo foi feito antes da pessoa X entrar na pool?
+//DÚVIDA: Essa pool emprestou dia 11/08 uma quantidade de dinheiro para um borrower, dia 12/08 uma pessoa X investe nessa pool. Quando a pool recebor o pagamento do borrower, elas distribuirá também
+//para a pessoa X? mesmo se o empréstimo foi feito antes da pessoa X entrar na pool?
 
 
 contract PortfolioMultiPool is Ownable, ReentrancyGuard{
@@ -29,12 +28,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard{
     //**Pool structure**:
 
 
-    //Fixed interest rate
-    uint256 public interestRate;
-    //Frequency of interest and principal payments, e.g. every 30 days.
-    uint256 public paymentFrequency;
-    //Additional interest owed when payments are late, e.g. 5%. 
-    uint256 public lateFee;
+
     //The current amount of USDC in the pool:
     uint256 public poolAmount;
     //Minimun investment allowed to the pool:
@@ -47,14 +41,11 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard{
     uint256 public privateInvestorsPoolAmount;
 
 
-    constructor(address _USDCAddress, address _poolBorrower, uint256 _interestRate, uint256 _minInvestment, uint256 _paymentFrequency, uint256 _lateFee, uint256 _poolLimit, address _portfolioMulti, address _scalablePool)  {
+    constructor(address _USDCAddress, address _poolBorrower, uint256 _minInvestment, uint256 _poolLimit, address _portfolioMulti, address _scalablePool)  {
         USDCAddress = IERC20(_USDCAddress);
         poolBorrower = _poolBorrower;
         contractEnabled = true;
         poolEnabled = true;
-        interestRate = _interestRate;
-        paymentFrequency = _paymentFrequency;
-        lateFee = _lateFee;
         poolLimit = _poolLimit;    
         portfolioMulti = _portfolioMulti;
         scalablePool = _scalablePool;
@@ -146,8 +137,16 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard{
 
     }
 
+    //fazer um mapping de contratos das pool borrowers, informando se eles fizeram pagamento ou não:
+    mapping(address => bool) public isMasterPool;
+
+    function modifyIsMasterPool(bool _bool, address _address) public onlyOwner() {
+        isMasterPool[_address] = _bool;
+    }
+
     //função para distribuir quanto cada um possui de reward para retirar:
-    function distribute(uint256 _USDCAmount) public onlyOwner() {
+    function distribute(uint256 _USDCAmount) public  {
+        require(isMasterPool[msg.sender], "You are not a verified master pool");
 
         for (uint256 i = 1; i <= _investors.current(); i++){
             if(Investors[i].isActive){
