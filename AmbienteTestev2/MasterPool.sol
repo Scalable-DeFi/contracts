@@ -10,6 +10,14 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+
+
+interface PortfolioMultiPool {
+    function distribute(uint256) external;
+}
+
+
+
 //  is ERC721URIStorage, Ownable
 contract MasterLending is Ownable, ReentrancyGuard{
 
@@ -20,6 +28,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
     address public poolBorrower;
     address public portfolioMulti;
     address public scalablePool;
+    PortfolioMultiPool public portfolioMultiInterface;
 
     bool public contractEnabled;
     bool public poolEnabled;
@@ -68,6 +77,10 @@ contract MasterLending is Ownable, ReentrancyGuard{
         privateInvestorPoolFee = _privateInvestorPoolFee;
         portfolioMultiPoolFee = _portfolioMultiPoolFee;
         daysDue = _daysDue;
+    }
+
+    function setPortfolioMultiInterface(PortfolioMultiPool _portfolioMultiInterface) public onlyOwner() {
+        portfolioMultiInterface = _portfolioMultiInterface;
     }
 
 
@@ -189,6 +202,8 @@ contract MasterLending is Ownable, ReentrancyGuard{
                 Loans[_id].repaidLoansAmount += 1;
                 Loans[_id].repaidLoansValue += USDCAmount;
 
+                portfolioMultiInterface.distribute(USDCAmount);
+
                 emit loanRepaid(_id, Loans[_id].repaidLoansAmount);
             }
         
@@ -217,6 +232,9 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
                 Loans[_id].repaidLoansAmount += 1;
                 Loans[_id].repaidLoansValue += amount;
+
+                portfolioMultiInterface.distribute(USDCAmount);
+
                 emit loanRepaid(_id, Loans[_id].repaidLoansAmount);
         }
        
