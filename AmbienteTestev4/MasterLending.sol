@@ -201,7 +201,6 @@ contract MasterLending is Ownable, ReentrancyGuard{
                 }
                 }
 
-
     function repayLoan(uint256 _id, uint256 USDCAmount) public onlyContractEnabled() nonReentrant {
         require(Loans[_id].repaidLoansAmount < paymentFrequency + 1, "error with paymentFrequency");
 
