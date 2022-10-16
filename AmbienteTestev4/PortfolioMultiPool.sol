@@ -183,12 +183,12 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
         poolAmount -= amount;
 
 
-        burnFrom(msg.sender, _LPAmount);
+        burn(_LPAmount);
 
         USDCAddress.transfer(msg.sender, amount);
 
     }
-    
+
 
     mapping(address => uint256) masterPoolToAmountInvested;
 
