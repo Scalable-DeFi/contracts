@@ -16,6 +16,11 @@ interface PortfolioMultiPool {
     function distribute(uint256) external;
 }
 
+interface KYC {
+    function isSanctionsSafe(address) external view returns (bool);
+    function currentlyAccredited(address) external view returns (bool);
+}
+
 
 //  is ERC721URIStorage, Ownable
 contract MasterLending is Ownable, ReentrancyGuard{
@@ -28,6 +33,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
     address public portfolioMulti;
     address public scalablePool;
     PortfolioMultiPool public portfolioMultiInterface;
+    KYC public KYCInterface;
 
     bool public contractEnabled;
     bool public poolEnabled;
@@ -84,11 +90,18 @@ contract MasterLending is Ownable, ReentrancyGuard{
         portfolioMultiInterface = _portfolioMultiInterface;
     }
 
-
-
+    function setKYCInterface(KYC _KYCInterface) public  onlyOwner() {
+        KYCInterface = _KYCInterface;
+    }
 
 
     //MODIFIERS:
+    modifier onlyKYC(address _address) {
+        require(KYCInterface.isSanctionsSafe(_address));
+        require(KYCInterface.currentlyAccredited(_address));
+        _;
+    }
+
     modifier onlyContractEnabled() {
         require(contractEnabled == true);
         _;
