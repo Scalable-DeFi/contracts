@@ -315,6 +315,9 @@ contract MasterLending is Ownable, ReentrancyGuard{
         allTimePoolInvested += _USDCAmount;
     }
 
+
+    event withdrawnGainsPrivateInvestor(uint256 id, uint256 USDCAmount, address lender); 
+
     //função para investidor privado retirar seu lucro:
     function withdrawGainsPrivateInvestor(uint256 _usdcAmount) public onlyContractEnabled onlyPoolEnabled nonReentrant {
         require(PrivateInvestors[addressToInvestorId[msg.sender]].isActive, "Not allowed investor");
@@ -323,8 +326,11 @@ contract MasterLending is Ownable, ReentrancyGuard{
         PrivateInvestors[addressToInvestorId[msg.sender]].totalAmountReceived += _usdcAmount;
         bool sent = USDCAddress.transfer(msg.sender, _usdcAmount);
         require(sent, "Failed to withdraw the loan");
+        emit withdrawnGainsPrivateInvestor(addressToInvestorId[msg.sender], _usdcAmount, msg.sender);
     }
 
+
+    event withdrawnInvestmentPrivateInvestor(uint256 id, uint256 USDCAmount, address lender); 
     //função para investidor privado retirar seu capital de investimento:
     function withdrawInvestmentPrivateInvestor(uint256 _usdcAmount) public onlyContractEnabled onlyPoolEnabled nonReentrant {
         require(PrivateInvestors[addressToInvestorId[msg.sender]].isActive, "Not allowed investor");
@@ -335,6 +341,8 @@ contract MasterLending is Ownable, ReentrancyGuard{
         poolAmount -= _usdcAmount;
         bool sent = USDCAddress.transfer(msg.sender, _usdcAmount);
         require(sent, "Failed to withdraw the investment");
+        emit withdrawnGainsPrivateInvestor(addressToInvestorId[msg.sender], _usdcAmount, msg.sender);
+
 
     }
     
