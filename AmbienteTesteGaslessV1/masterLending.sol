@@ -209,15 +209,11 @@ contract MasterLending is Ownable, ReentrancyGuard{
     function repayLoan(uint256 _id, uint256 USDCAmount, address _address) public onlyContractEnabled() nonReentrant {
         require(Loans[_id].repaidLoansAmount < paymentFrequency + 1, "error with paymentFrequency");
 
-
-        address msgSender = msg.sender == portfolioMultiInterface.retrieveOneAboveAll() ? _address : msg.sender;
-
-
         if((Loans[_id].withdrawnTimestamp + (((daysDue) * 86400) * Loans[_id].repaidLoansAmount) >= block.timestamp)) {
                 uint256 amount = ((Loans[_id].withdrawnAmount / paymentFrequency) + ((Loans[_id].withdrawnAmount * interestRate / 1000) / paymentFrequency));
                 require(USDCAmount >= amount, "amount not sufficient");
                 uint256 scalablePoolAmount = USDCAmount * scalablePoolFee / 1000;
-                bool sent = USDCAddress.transferFrom(msgSender, scalablePool, scalablePoolAmount);
+                bool sent = USDCAddress.transferFrom(msg.sender, scalablePool, scalablePoolAmount);
                 require(sent, "Failed to repay the loan");
 
 
@@ -228,7 +224,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
                 }
 
                 uint256 portfolioMultiAmount = USDCAmount * portfolioMultiPoolFee / 1000;
-                USDCAddress.transferFrom(msgSender, portfolioMulti, portfolioMultiAmount);
+                USDCAddress.transferFrom(msg.sender, portfolioMulti, portfolioMultiAmount);
 
 
 
@@ -247,7 +243,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
                 uint256 amount = ((Loans[_id].withdrawnAmount / paymentFrequency) + ((Loans[_id].withdrawnAmount * interestRate / 1000) / paymentFrequency) + (((Loans[_id].withdrawnAmount * lateFee / 1000) * (block.timestamp - whenYouShouldHavePaid)) / 86400));
                 require(USDCAmount >= amount);
                 uint256 scalablePoolAmount = USDCAmount * scalablePoolFee / 1000;
-                bool sent = USDCAddress.transferFrom(msgSender, scalablePool, scalablePoolAmount);
+                bool sent = USDCAddress.transferFrom(msg.sender, scalablePool, scalablePoolAmount);
                 require(sent, "Failed to repay the loan");
 
                 //calculando a parte para os privateinvestor:
@@ -257,7 +253,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
                 }
 
                 uint256 portfolioMultiAmount = USDCAmount * portfolioMultiPoolFee / 1000;
-                bool sentPortfolioMultiAmount = USDCAddress.transferFrom(msgSender, portfolioMulti, portfolioMultiAmount);
+                bool sentPortfolioMultiAmount = USDCAddress.transferFrom(msg.sender, portfolioMulti, portfolioMultiAmount);
                 require(sentPortfolioMultiAmount, "Failed to repay the loan");
 
                 Loans[_id].repaidLoansAmount += 1;
@@ -280,7 +276,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
         if(!PrivateInvestors[addressToInvestorId[msgSender]].isActive){
 
-            bool sent = USDCAddress.transferFrom(msgSender, address(this), _USDCAmount);
+            bool sent = USDCAddress.transferFrom(msg.sender, address(this), _USDCAmount);
             require(sent, "Failed to transfer the amount");
 
             poolAmount += _USDCAmount;
@@ -302,7 +298,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
         //se o investidor já existe, usar a sua struct:
         else {
 
-            bool sent = USDCAddress.transferFrom(msgSender, address(this), _USDCAmount);
+            bool sent = USDCAddress.transferFrom(msg.sender, address(this), _USDCAmount);
             require(sent, "Failed to transfer the amount");
 
             poolAmount += _USDCAmount;
