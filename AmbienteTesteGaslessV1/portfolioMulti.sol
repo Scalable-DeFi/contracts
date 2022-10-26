@@ -115,7 +115,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
         //se investidor não existe ainda, criar struct:
         if(!Investors[addressToInvestorId[msgSender]].isActive){
 
-            bool sent = USDCAddress.transferFrom(msgSender, address(this), _USDCAmount);
+            bool sent = USDCAddress.transferFrom(msg.sender, address(this), _USDCAmount);
             require(sent, "Failed to transfer the amount");
 
 
@@ -143,7 +143,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
         //se o investidor já existe, usar a sua struct:
         else {
 
-            bool sent = USDCAddress.transferFrom(msgSender, address(this), _USDCAmount);
+            bool sent = USDCAddress.transferFrom(msg.sender, address(this), _USDCAmount);
             require(sent, "Failed to transfer the amount");
 
             poolAmount += _USDCAmount;
