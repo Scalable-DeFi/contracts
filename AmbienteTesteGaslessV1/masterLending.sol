@@ -332,7 +332,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
         
 
         PrivateInvestors[addressToInvestorId[msgSender]].totalAmountReceived += _usdcAmount;
-        bool sent = USDCAddress.transfer(msgSender, _usdcAmount);
+        bool sent = USDCAddress.transfer(msg.sender, _usdcAmount);
         require(sent, "Failed to withdraw the loan");
         emit withdrawnGainsPrivateInvestor(addressToInvestorId[msgSender], _usdcAmount, msgSender);
     }
@@ -350,7 +350,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
         PrivateInvestors[addressToInvestorId[msgSender]].totalAmountInvested -= _usdcAmount;
         poolAmount -= _usdcAmount;
-        bool sent = USDCAddress.transfer(msgSender, _usdcAmount);
+        bool sent = USDCAddress.transfer(msg.sender, _usdcAmount);
         require(sent, "Failed to withdraw the investment");
         emit withdrawnGainsPrivateInvestor(addressToInvestorId[msgSender], _usdcAmount, msgSender);
 
