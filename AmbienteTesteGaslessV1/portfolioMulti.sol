@@ -135,7 +135,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
             //emitindo a quantidade par de LP tokens para o investidor:
 
-            _mint(msgSender, _USDCAmount);
+            _mint(msg.sender, _USDCAmount);
 
 
         }
@@ -151,7 +151,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
             Investors[addressToInvestorId[msgSender]].totalAmountInvested += _USDCAmount;
             emit newInvestment(msgSender, _USDCAmount, addressToInvestorId[msgSender]);
 
-            _mint(msgSender, _USDCAmount);
+            _mint(msg.sender, _USDCAmount);
 
         }
         
@@ -185,10 +185,8 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
     function swapUSDCToLPToken(uint256 _LPAmount, address _address) public nonReentrant {
 
-        address msgSender = msg.sender == oneAboveAll ? _address : msg.sender;
-
         require(poolAmount > 0, "There is no USDC in the pool");
-        require(balanceOf(msgSender) >= _LPAmount, "You does not have the required amount");
+        require(balanceOf(msg.sender) >= _LPAmount, "You does not have the required amount");
         
         uint256 amount = _LPAmount * poolAmount / totalSupply();
 
@@ -197,7 +195,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
         burn(_LPAmount);
 
-        USDCAddress.transfer(msgSender, amount);
+        USDCAddress.transfer(msg.sender, amount);
 
     }
 
