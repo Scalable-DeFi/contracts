@@ -219,6 +219,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
                 //calculando a parte para os privateinvestor:
                 uint256 privateInvestorAmount = USDCAmount * privateInvestorPoolFee / 1000;
+                USDCAddress.transferFrom(msg.sender, address(this), privateInvestorAmount);
                 for (uint i = 1; i <= _privateInvestorsCounter.current(); i++){
                     PrivateInvestors[i].totalAmountReceived += privateInvestorAmount * PrivateInvestors[i].totalAmountInvested / privateInvestorsPoolAmount;
                 }
@@ -331,7 +332,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
         
         
 
-        PrivateInvestors[addressToInvestorId[msgSender]].totalAmountReceived += _usdcAmount;
+        PrivateInvestors[addressToInvestorId[msgSender]].totalAmountWithdrawed += _usdcAmount;
         bool sent = USDCAddress.transfer(msg.sender, _usdcAmount);
         require(sent, "Failed to withdraw the loan");
         emit withdrawnGainsPrivateInvestor(addressToInvestorId[msgSender], _usdcAmount, msgSender);
