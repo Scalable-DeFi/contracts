@@ -47,8 +47,6 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
     
     //Pool structure:
-    //The current amount of USDC in the pool:
-    uint256 public poolAmount;
     //Minimun investment allowed to the pool:
     uint256 public minInvestment;
     //The current withdrawn amount from the borrower:
@@ -140,7 +138,6 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
 
             //Investindo na pool e criando uma struct para guardar informações sobre o investimento
-            poolAmount += _USDCAmount;
             totalAmountInvested += _USDCAmount;
             _investors.increment();
             Investors[_investors.current()] = Investor ({
@@ -155,7 +152,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
             //emitindo a quantidade par de LP tokens para o investidor:
 
-            _mint(msgSender, _USDCAmount);
+            _mint(msg.sender, _USDCAmount);
 
 
         }
@@ -166,7 +163,6 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
             bool sent = USDCAddress.transferFrom(msg.sender, address(this), _USDCAmount);
             require(sent, "Failed to transfer the amount");
 
-            poolAmount += _USDCAmount;
             totalAmountInvested += _USDCAmount;
             Investors[addressToInvestorId[msgSender]].totalAmountInvested += _USDCAmount;
             emit newInvestment(msgSender, _USDCAmount, addressToInvestorId[msgSender]);
@@ -191,6 +187,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
         totalAmountReceived += _USDCAmount;
 
+                /*
         for (uint256 i = 1; i <= _investors.current(); i++){
             if(Investors[i].isActive){
                 uint256 amount = _USDCAmount * Investors[i].totalAmountInvested / poolAmount;
@@ -198,7 +195,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
                 emit newAmountReceived(Investors[i].investor, amount, i);
             }
         }
-
+            */
     }
 
 
@@ -208,13 +205,10 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
         address msgSender = msg.sender == oneAboveAll ? _address : msg.sender;
 
-        require(poolAmount > 0, "There is no USDC in the pool");
+        require(USDCAddress.balanceOf(address(this)) > 0, "There is no USDC in the pool");
         require(balanceOf(msg.sender) >= _LPAmount, "You does not have the required amount");
         
-        uint256 amount = _LPAmount * poolAmount / totalSupply();
-
-        poolAmount -= amount;
-
+        uint256 amount = _LPAmount * USDCAddress.balanceOf(address(this)) / totalSupply();
 
         burn(_LPAmount);
 
