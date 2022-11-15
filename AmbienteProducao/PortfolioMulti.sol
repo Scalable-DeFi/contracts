@@ -167,7 +167,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
             Investors[addressToInvestorId[msgSender]].totalAmountInvested += _USDCAmount;
             emit newInvestment(msgSender, _USDCAmount, addressToInvestorId[msgSender]);
 
-            _mint(msgSender, _USDCAmount);
+            _mint(msg.sender, _USDCAmount);
 
         }
         
