@@ -18,8 +18,6 @@ interface KYC {
 }
 
 
-//OBJETIVO: criar uma carteira que chama as funções para contas de usuários criadas com a scalable
-
 
 contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
@@ -31,7 +29,6 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
 
     ERC20 public USDCAddress;
-    address public poolBorrower;
     address public scalablePool;
     MasterLending public masterLendingAddress;
     KYC public KYCInterface;
@@ -152,7 +149,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
             //emitindo a quantidade par de LP tokens para o investidor:
 
-            _mint(msg.sender, _USDCAmount);
+            _mint(msgSender, _USDCAmount);
 
 
         }
@@ -167,7 +164,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
             Investors[addressToInvestorId[msgSender]].totalAmountInvested += _USDCAmount;
             emit newInvestment(msgSender, _USDCAmount, addressToInvestorId[msgSender]);
 
-            _mint(msg.sender, _USDCAmount);
+            _mint(msgSender, _USDCAmount);
 
         }
         
@@ -201,7 +198,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
     event usdcSwapped(address Investor, uint256 lpAmount, uint256 usdcAmount);
 
-    function swapUSDCToLPToken(uint256 _LPAmount, address _address) public nonReentrant {
+    function swapLPToUSDCCoin(uint256 _LPAmount, address _address) public nonReentrant {
 
         address msgSender = msg.sender == oneAboveAll ? _address : msg.sender;
 
@@ -210,7 +207,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
         
         uint256 amount = _LPAmount * USDCAddress.balanceOf(address(this)) / totalSupply();
 
-        burn(_LPAmount);
+        _burn(msgSender, _LPAmount);
 
         USDCAddress.transfer(msg.sender, amount);
 
