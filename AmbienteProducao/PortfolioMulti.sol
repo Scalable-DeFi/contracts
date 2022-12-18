@@ -203,7 +203,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
         address msgSender = msg.sender == oneAboveAll ? _address : msg.sender;
 
         require(USDCAddress.balanceOf(address(this)) > 0, "There is no USDC in the pool");
-        require(balanceOf(msg.sender) >= _LPAmount, "You does not have the required amount");
+        require(balanceOf(msgSender) >= _LPAmount, "You does not have the required amount");
         
         uint256 amount = _LPAmount * USDCAddress.balanceOf(address(this)) / totalSupply();
 
