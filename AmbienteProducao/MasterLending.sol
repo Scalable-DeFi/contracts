@@ -96,13 +96,10 @@ contract MasterLending is Ownable, ReentrancyGuard{
     }
 
 
-    function seeKYC(address _address) public view returns(bool){
-        return KYCInterface.isSanctionsSafe(_address);
-    }
-
     //MODIFIERS:
     modifier onlyKYC(address _address) {
-        require(KYCInterface.isSanctionsSafe(_address) == true || msg.sender == portfolioMultiInterface.retrieveOneAboveAll());
+        require(KYCInterface.isSanctionsSafe(_address));
+        require(KYCInterface.currentlyAccredited(_address));
         _;
     }
 
@@ -222,6 +219,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
                 //calculando a parte para os privateinvestor:
                 uint256 privateInvestorAmount = USDCAmount * privateInvestorPoolFee / 1000;
+                USDCAddress.transferFrom(msg.sender, address(this), privateInvestorAmount);
                 for (uint i = 1; i <= _privateInvestorsCounter.current(); i++){
                     PrivateInvestors[i].totalAmountReceived += privateInvestorAmount * PrivateInvestors[i].totalAmountInvested / privateInvestorsPoolAmount;
                 }
@@ -334,8 +332,8 @@ contract MasterLending is Ownable, ReentrancyGuard{
         
         
 
-        PrivateInvestors[addressToInvestorId[msgSender]].totalAmountReceived += _usdcAmount;
-        bool sent = USDCAddress.transfer(msgSender, _usdcAmount);
+        PrivateInvestors[addressToInvestorId[msgSender]].totalAmountWithdrawed += _usdcAmount;
+        bool sent = USDCAddress.transfer(msg.sender, _usdcAmount);
         require(sent, "Failed to withdraw the loan");
         emit withdrawnGainsPrivateInvestor(addressToInvestorId[msgSender], _usdcAmount, msgSender);
     }
@@ -353,7 +351,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
         PrivateInvestors[addressToInvestorId[msgSender]].totalAmountInvested -= _usdcAmount;
         poolAmount -= _usdcAmount;
-        bool sent = USDCAddress.transfer(msgSender, _usdcAmount);
+        bool sent = USDCAddress.transfer(msg.sender, _usdcAmount);
         require(sent, "Failed to withdraw the investment");
         emit withdrawnGainsPrivateInvestor(addressToInvestorId[msgSender], _usdcAmount, msgSender);
 
