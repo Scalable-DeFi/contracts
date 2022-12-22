@@ -183,22 +183,12 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
         require(isMasterPool[msg.sender], "You are not a verified master pool");
 
         totalAmountReceived += _USDCAmount;
-
-                /*
-        for (uint256 i = 1; i <= _investors.current(); i++){
-            if(Investors[i].isActive){
-                uint256 amount = _USDCAmount * Investors[i].totalAmountInvested / poolAmount;
-                Investors[i].totalAmountReceived += amount;
-                emit newAmountReceived(Investors[i].investor, amount, i);
-            }
-        }
-            */
     }
 
 
     event usdcSwapped(address Investor, uint256 lpAmount, uint256 usdcAmount);
 
-    function swapLPToUSDCCoin(uint256 _LPAmount, address _address) public nonReentrant {
+    function swapLPToUSDC(uint256 _LPAmount, address _address) public nonReentrant {
 
         address msgSender = msg.sender == oneAboveAll ? _address : msg.sender;
 
