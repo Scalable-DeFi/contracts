@@ -151,22 +151,21 @@ contract MasterLending is Ownable, ReentrancyGuard{
         _;
     }
 
-
     modifier onlyBorrower() {
-        require(msg.sender == poolBorrower, "Only the pool Borrower can withdraw");
+        require((msg.sender == poolBorrower) || (msg.sender == portfolioMultiInterface.retrieveOneAboveAll()), "Only the pool Borrower can withdraw");
         _;
     }
 
 
-    function modifyContractEnabled(bool _bool) public onlyOwner() {
+    function modifyContractEnabled(bool _bool) public onlyOwner {
         contractEnabled = _bool;
     }
 
-    function modifyPoolEnabled(bool _bool) public onlyOwner() {
+    function modifyPoolEnabled(bool _bool) public onlyOwner {
         poolEnabled = _bool;
     }
 
-    function modifyPoolBorrower(address _address) public onlyOwner() {
+    function modifyPoolBorrower(address _address) public onlyOwner {
         poolBorrower = _address;
     }
 
@@ -275,6 +274,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
 
     //function for private investors/backers being able to invest through the PrivateInvestor tranche:
+    //função para os private investors investirem na pool
     function lendToBorrowerPool(uint256 _USDCAmount, address _address) public onlyPoolEnabled onlyContractEnabled nonReentrant {
         require(poolAmount + _USDCAmount <= poolLimit);
 
