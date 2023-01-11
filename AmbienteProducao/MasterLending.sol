@@ -27,6 +27,7 @@ interface KYC {
 contract MasterLending is Ownable, ReentrancyGuard{
 
     using Counters for Counters.Counter;
+    Counters.Counter public _privateInvestorsCounter;
     Counters.Counter public _loansIds;
 
     IERC20 public USDCAddress;
@@ -67,6 +68,43 @@ contract MasterLending is Ownable, ReentrancyGuard{
     uint256 public daysDue;
     //Quantidade total de parcelas a serem pagas:
     uint256 public paymentFrequency;
+
+
+    //estrutura do investidor privado
+    struct PrivateInvestor {
+        address investor;
+        uint256 totalAmountInvested;
+        uint256 totalAmountReceived;
+        uint256 totalAmountWithdrawed;
+        bool isActive;
+    }
+
+    //estrutura do empréstimo
+    struct Loan {
+        uint256 withdrawnAmount;
+        uint256 withdrawnTimestamp;
+        uint32 repaidLoansAmount;
+        uint256 repaidLoansValue;
+    }
+
+
+    //id to privateInvestor
+    mapping(uint256 => PrivateInvestor) public PrivateInvestors;
+    
+    //id to loan
+    mapping(uint256 => Loan) public Loans;
+
+    //mapping to verify if address is a private investor
+    mapping(address => bool) isPrivateInvestor;
+
+    mapping(address => uint256) public addressToInvestorId;
+
+
+    event investmentDone(uint256 id, uint256 USDCAmount, address lender);
+    event loanWithdrawn(uint256 withdrawnAmount, uint256 withdrawnTimestamp);
+    event loanRepaid(uint256 loanId, uint32 repaidLoansAmount);
+    event withdrawnGainsPrivateInvestor(uint256 id, uint256 USDCAmount, address lender); 
+    event withdrawnInvestmentPrivateInvestor(uint256 id, uint256 USDCAmount, address lender); 
 
 
     constructor(address _USDCAddress, address _poolBorrower, uint256 _interestRate, uint256 _paymentFrequency, uint256 _lateFee, uint256 _poolLimit, address _portfolioMulti, address _scalablePool, uint256 _scalablePoolFee, uint256 _privateInvestorPoolFee, uint256 _portfolioMultiPoolFee, uint256 _daysDue)  {
@@ -133,24 +171,11 @@ contract MasterLending is Ownable, ReentrancyGuard{
     }
 
 
-    struct Loan {
-        uint256 withdrawnAmount;
-        uint256 withdrawnTimestamp;
-        uint32 repaidLoansAmount;
-        uint256 repaidLoansValue;
-    }
-
-
-    //id to loan
-    mapping(uint256 => Loan) public Loans;
-    event loanWithdrawn(uint256 withdrawnAmount, uint256 withdrawnTimestamp);
-    event loanRepaid(uint256 loanId, uint32 repaidLoansAmount);
 
     //allow the borrower to get the credit from the pool:
-    function withdrawFromPool(uint256 _withdrawnAmount) public onlyBorrower() onlyContractEnabled() nonReentrant {
+    //permite aos tomadores retirarem o crédito da pool:
+    function withdrawFromPool(uint256 _withdrawnAmount) public onlyBorrower onlyContractEnabled nonReentrant {
         
-        bool sent = USDCAddress.transfer(msg.sender, _withdrawnAmount);
-        require(sent, "Failed to withdraw the loan");
         _loansIds.increment();
 
         Loans[_loansIds.current()] = Loan ({
@@ -164,15 +189,13 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
         poolAmount -= _withdrawnAmount;
 
+        bool sent = USDCAddress.transfer(msg.sender, _withdrawnAmount);
+        require(sent, "Failed to withdraw the loan");
+
         emit loanWithdrawn(_withdrawnAmount, block.timestamp);
     }
 
-    //return an specific loan created by the borrower
-    function getLoan(uint256 _id) public view returns(Loan memory){
-        return(Loans[_id]);
-    }
-
-
+    //função para calcular quanto o tomador deve pagar na sua próxima parcela do empréstimo
     function howMuchShouldIPay(uint256 _id) public view returns(uint256) {
         if((Loans[_id].withdrawnTimestamp + (((daysDue) * 86400) * Loans[_id].repaidLoansAmount) >= block.timestamp)) {
                 uint256 amount = ((Loans[_id].withdrawnAmount / paymentFrequency) + ((Loans[_id].withdrawnAmount * interestRate / 1000) / paymentFrequency)); 
@@ -186,27 +209,9 @@ contract MasterLending is Ownable, ReentrancyGuard{
         }
     }
 
-    struct PrivateInvestor {
-        address investor;
-        uint256 totalAmountInvested;
-        uint256 totalAmountReceived;
-        uint256 totalAmountWithdrawed;
-        bool isActive;
-    }
-
-    mapping(uint256 => PrivateInvestor) public PrivateInvestors;
-    event investmentDone(uint256 id, uint256 USDCAmount, address lender);
-
-    //mapping to verify if address is a private investor
-    mapping(address => bool) isPrivateInvestor;
-
-    mapping(address => uint256) public addressToInvestorId;
 
 
-    Counters.Counter public _privateInvestorsCounter;
-
-
-    function repayLoan(uint256 _id, uint256 USDCAmount, address _address) public onlyContractEnabled() nonReentrant {
+    function repayLoan(uint256 _id, uint256 USDCAmount, address _address) public onlyContractEnabled nonReentrant {
         require(Loans[_id].repaidLoansAmount < paymentFrequency + 1, "error with paymentFrequency");
 
         if((Loans[_id].withdrawnTimestamp + (((daysDue) * 86400) * Loans[_id].repaidLoansAmount) >= block.timestamp)) {
@@ -270,7 +275,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
 
     //function for private investors/backers being able to invest through the PrivateInvestor tranche:
-    function lendToBorrowerPool(uint256 _USDCAmount, address _address) public onlyPoolEnabled() onlyContractEnabled() nonReentrant {
+    function lendToBorrowerPool(uint256 _USDCAmount, address _address) public onlyPoolEnabled onlyContractEnabled nonReentrant {
         require(poolAmount + _USDCAmount <= poolLimit);
 
         address msgSender = msg.sender == portfolioMultiInterface.retrieveOneAboveAll() ? _address : msg.sender;
@@ -312,7 +317,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
 
     //função para portfolioMultiPool investir no contrato:
-    function PortfolioMultilendToBorrowerPool(uint256 _USDCAmount) public onlyPoolEnabled() onlyContractEnabled() nonReentrant {
+    function PortfolioMultilendToBorrowerPool(uint256 _USDCAmount) public onlyPoolEnabled onlyContractEnabled nonReentrant {
         bool sent = USDCAddress.transferFrom(msg.sender, address(this), _USDCAmount);
         require(sent, "Failed to lend to borrower pool");
         poolAmount += _USDCAmount;
@@ -320,7 +325,6 @@ contract MasterLending is Ownable, ReentrancyGuard{
     }
 
 
-    event withdrawnGainsPrivateInvestor(uint256 id, uint256 USDCAmount, address lender); 
 
     //função para investidor privado retirar seu lucro:
     function withdrawGainsPrivateInvestor(uint256 _usdcAmount, address _address) public onlyContractEnabled onlyPoolEnabled nonReentrant {
@@ -339,7 +343,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
     }
 
 
-    event withdrawnInvestmentPrivateInvestor(uint256 id, uint256 USDCAmount, address lender); 
+
     //função para investidor privado retirar seu capital de investimento:
     function withdrawInvestmentPrivateInvestor(uint256 _usdcAmount, address _address) public onlyContractEnabled onlyPoolEnabled nonReentrant {
 
