@@ -178,6 +178,10 @@ contract MasterLending is Ownable, ReentrancyGuard{
         poolAmount = _poolAmount;
     }
 
+    function modifyPaymentLateFee(uint256 _paymentLateFee) public onlyOwner {
+        paymentLateFee = _paymentLateFee;
+    }
+
     function modifyPoolTimestamp(uint256 _timestamp) public onlyOwner {
         if(_timestamp == 0) {
             poolTimestamp = block.timestamp;
@@ -373,6 +377,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
         bool sent = USDCAddress.transfer(msg.sender, _usdcAmount);
         require(sent, "Failed to withdraw the investment");
         emit withdrawnGainsPrivateInvestor(addressToInvestorId[msgSender], _usdcAmount, msgSender);
-    }
 
+    }
+   
 }
