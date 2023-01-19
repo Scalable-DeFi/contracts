@@ -47,7 +47,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
     uint256 public poolAmount;
     //The total amount of USDC invested in the pool:
     uint256 public allTimePoolInvested;
-    //taxa de juros:
+    //taxa de juros -> 1000 == 10%
     uint256 public interestRate;
     //The current withdrawn amount from the borrower:
     uint256 public withdrawnAmount;
