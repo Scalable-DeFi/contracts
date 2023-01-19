@@ -74,7 +74,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
     //Montate (em usdc) que deverá ser pago em caso de atraso (juros) - contabilizando por dia:
     uint256 public paymentLateFee;
     //Qual o montante total de pagamentos já feitos:
-    uint256 public paymentsDonesAmount;
+    uint256 public paymentsDoneAmount;
 
 
 
@@ -254,7 +254,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
 
                 paymentsDone += 1;
-                paymentsDonesAmount += USDCAmount;
+                paymentsDoneAmount += USDCAmount;
 
                 portfolioMultiInterface.distribute(USDCAmount);
 
@@ -281,7 +281,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
                 require(sentPortfolioMultiAmount, "Failed to repay the loan");
 
                 paymentsDone += 1;
-                paymentsDonesAmount += USDCAmount;
+                paymentsDoneAmount += USDCAmount;
 
                 portfolioMultiInterface.distribute(USDCAmount);
 
@@ -378,6 +378,9 @@ contract MasterLending is Ownable, ReentrancyGuard{
         require(sent, "Failed to withdraw the investment");
         emit withdrawnGainsPrivateInvestor(addressToInvestorId[msgSender], _usdcAmount, msgSender);
 
+
     }
-   
+    
+
+
 }
