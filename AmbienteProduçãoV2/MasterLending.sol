@@ -47,7 +47,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
     uint256 public poolAmount;
     //The total amount of USDC invested in the pool:
     uint256 public allTimePoolInvested;
-    //taxa de juros -> 1000 == 10%
+    //taxa de juros -> 1000 == 10%:
     uint256 public interestRate;
     //The current withdrawn amount from the borrower:
     uint256 public withdrawnAmount;
@@ -243,13 +243,16 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
                 //calculando a parte para os privateinvestor:
                 uint256 privateInvestorAmount = USDCAmount * privateInvestorPoolFee / 10000;
-                USDCAddress.transferFrom(msg.sender, address(this), privateInvestorAmount);
+                bool sentPrivateInvestorAmount = USDCAddress.transferFrom(msg.sender, address(this), privateInvestorAmount);
+                require(sentPrivateInvestorAmount, "Failed to repay the loan");
                 for (uint i = 1; i <= _privateInvestorsCounter.current(); i++){
                     PrivateInvestors[i].totalAmountReceived += privateInvestorAmount * PrivateInvestors[i].totalAmountInvested / privateInvestorsPoolAmount;
                 }
 
                 uint256 portfolioMultiAmount = USDCAmount * portfolioMultiPoolFee / 10000;
-                USDCAddress.transferFrom(msg.sender, portfolioMulti, portfolioMultiAmount);
+                bool sentPortfolioMultiAmount = USDCAddress.transferFrom(msg.sender, portfolioMulti, portfolioMultiAmount);
+                require(sentPortfolioMultiAmount, "Failed to repay the loan");
+
 
 
 
@@ -272,6 +275,8 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
                 //calculando a parte para os privateinvestor:
                 uint256 privateInvestorAmount = USDCAmount * privateInvestorPoolFee / 10000;
+                bool sentPrivateInvestorAmount = USDCAddress.transferFrom(msg.sender, address(this), privateInvestorAmount);
+                require(sentPrivateInvestorAmount, "Failed to repay the loan");
                 for (uint i = 1; i <= _privateInvestorsCounter.current(); i++){
                     PrivateInvestors[i].totalAmountReceived += privateInvestorAmount * PrivateInvestors[i].totalAmountInvested / privateInvestorsPoolAmount;
                 }
