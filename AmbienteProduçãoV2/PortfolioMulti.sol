@@ -200,7 +200,8 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
         _burn(msgSender, _LPAmount);
 
-        USDCAddress.transfer(msg.sender, amount);
+        bool sent = USDCAddress.transfer(msg.sender, amount);
+        require(sent, "Failed to transfer the amount");
 
         emit usdcSwapped(msgSender, _LPAmount, amount);
 
@@ -214,5 +215,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
         masterLendingAddress = MasterLending(_address);
         masterLendingAddress.PortfolioMultilendToBorrowerPool(amount);
         masterPoolToAmountInvested[_address] += amount;
+
     }
+   
 }
