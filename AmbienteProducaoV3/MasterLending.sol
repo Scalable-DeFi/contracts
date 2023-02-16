@@ -108,7 +108,7 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
 
     constructor(address _USDCAddress, address _poolBorrower, uint256 _interestRate, uint256 _paymentFrequency, uint256 _lateFee, uint256 _poolLimit, address _portfolioMulti, address _scalablePool, uint256 _scalablePoolFee, uint256 _privateInvestorPoolFee, uint256 _portfolioMultiPoolFee, uint256 _daysDue)  {
-        require(_scalablePoolFee + _privateInvestorPoolFee + _portfolioMultiPoolFee == 1000, "The fees distribution are not correct");
+        require(_scalablePoolFee + _privateInvestorPoolFee + _portfolioMultiPoolFee == 10000, "The fees distribution are not correct");
         USDCAddress = IERC20(_USDCAddress);
         poolBorrower = _poolBorrower;
         contractEnabled = true;
@@ -206,20 +206,20 @@ contract MasterLending is Ownable, ReentrancyGuard{
 
     function repayLoan(uint256 _id, uint256 USDCAmount) public onlyBorrower onlyContractEnabled nonReentrant {
 
-                uint256 scalablePoolAmount = USDCAmount * scalablePoolFee / 1000;
+                uint256 scalablePoolAmount = USDCAmount * scalablePoolFee / 10000;
                 bool sentScalablePoolAmount = USDCAddress.transferFrom(msg.sender, scalablePool, scalablePoolAmount);
                 require(sentScalablePoolAmount, "Failed to repay the loan");
 
 
                 //calculando a parte para os privateinvestor:
-                uint256 privateInvestorAmount = USDCAmount * privateInvestorPoolFee / 1000;
+                uint256 privateInvestorAmount = USDCAmount * privateInvestorPoolFee / 10000;
                 bool sentPrivateInvestorAmount = USDCAddress.transferFrom(msg.sender, address(this), privateInvestorAmount);
                 require(sentPrivateInvestorAmount, "Failed transfering the amount");
                 for (uint i = 1; i <= _privateInvestorsCounter.current(); i++){
                     PrivateInvestors[i].totalAmountReceived += privateInvestorAmount * PrivateInvestors[i].totalAmountInvested / privateInvestorsPoolAmount;
                 }
 
-                uint256 portfolioMultiAmount = USDCAmount * portfolioMultiPoolFee / 1000;
+                uint256 portfolioMultiAmount = USDCAmount * portfolioMultiPoolFee / 10000;
                 bool sentPortfolioMultiAmount = USDCAddress.transferFrom(msg.sender, portfolioMulti, portfolioMultiAmount);
                 require(sentPortfolioMultiAmount, "Failed transfering the amount");
 
