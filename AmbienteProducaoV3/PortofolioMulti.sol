@@ -70,18 +70,18 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
     }
 
 
-    function retrieveOneAboveAll() public view returns(address) {
+    function retrieveOneAboveAll public view returns(address) {
         return oneAboveAll;
     }
 
 
     //MODIFIERS:
-    modifier onlyContractEnabled() {
+    modifier onlyContractEnabled {
         require(contractEnabled == true);
         _;
     }
 
-    modifier onlyPoolEnabled() {
+    modifier onlyPoolEnabled {
         require(poolEnabled == true);
         _;
     }
@@ -99,11 +99,11 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
 
 
 
-    function modifyContractEnabled(bool _bool) public onlyOwner() {
+    function modifyContractEnabled(bool _bool) public onlyOwner {
         contractEnabled = _bool;
     }
 
-    function modifyPoolEnabled(bool _bool) public onlyOwner() {
+    function modifyPoolEnabled(bool _bool) public onlyOwner {
         poolEnabled = _bool;
     }
 
@@ -123,7 +123,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
     mapping(uint256 => Investor) public Investors;
     mapping(address => uint256) public addressToInvestorId;
 
-    function investInPool(uint256 _USDCAmount, address _address) public onlyPoolEnabled() onlyContractEnabled() onlyKYC(msg.sender) {
+    function investInPool(uint256 _USDCAmount, address _address) public onlyPoolEnabled onlyContractEnabled onlyKYC(msg.sender) {
         require(_USDCAmount >= minInvestment, "You need to invest more");
 
         address msgSender = msg.sender == oneAboveAll ? _address : msg.sender;
@@ -175,7 +175,7 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
     //fazer um mapping de contratos das pool borrowers, informando se eles fizeram pagamento ou não:
     mapping(address => bool) public isMasterPool;
 
-    function modifyIsMasterPool(bool _bool, address _address) public onlyOwner() {
+    function modifyIsMasterPool(bool _bool, address _address) public onlyOwner {
         isMasterPool[_address] = _bool;
     }
 
