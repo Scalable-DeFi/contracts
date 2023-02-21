@@ -70,18 +70,18 @@ contract PortfolioMultiPool is Ownable, ReentrancyGuard, ERC20, ERC20Burnable {
     }
 
 
-    function retrieveOneAboveAll public view returns(address) {
+    function retrieveOneAboveAll() public view returns(address) {
         return oneAboveAll;
     }
 
 
     //MODIFIERS:
-    modifier onlyContractEnabled {
+    modifier onlyContractEnabled() {
         require(contractEnabled == true);
         _;
     }
 
-    modifier onlyPoolEnabled {
+    modifier onlyPoolEnabled() {
         require(poolEnabled == true);
         _;
     }
